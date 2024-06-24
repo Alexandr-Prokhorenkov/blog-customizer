@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { StrictMode, CSSProperties, useState, useEffect, useRef } from 'react';
+import { StrictMode, CSSProperties, useState } from 'react';
 import clsx from 'clsx';
 
 import { Article } from './components/article/Article';
@@ -22,10 +22,8 @@ export type CustomCSSProperties = CSSProperties & {
 };
 
 const App = () => {
-	//состояние для управления видимостью сайдбара
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	//состояние для передачи в Article
     const [appliedStyles, setAppliedStyles] = useState<CustomCSSProperties>({
         '--font-family': defaultArticleState.fontFamilyOption.value,
         '--font-size': defaultArticleState.fontSizeOption.value,
@@ -34,66 +32,35 @@ const App = () => {
         '--bg-color': defaultArticleState.backgroundColor.value,
     });
 
-	// Используем useRef для определения кликов вне сайдбара
-	const sidebarRef = useRef<HTMLDivElement>(null);
-
-	// Функция для переключения видимости сайдбара
-	const handleToggleSidebar = () => {
-		setIsSidebarOpen((prevState) => !prevState);
-	};
-
-	// Функция для обработки кликов вне сайдбара
-	const handleClickOutside = (event: MouseEvent) => {
-		if (
-			sidebarRef.current &&
-			!sidebarRef.current.contains(event.target as Node)
-		) {
-			setIsSidebarOpen(false);
-		}
-	};
+    const handleToggleSidebar = () => {
+        setIsSidebarOpen((prevState) => !prevState);
+    };
 
     const onApplyStyles = (stylesToApply: CustomCSSProperties) => {
         setAppliedStyles(stylesToApply);
-
     };
 
+    const handleCloseSidebar = () => {
+        setIsSidebarOpen(false);
+    };
 
-	// useEffect для добавления и удаления обработчика событий клика вне сайдбара
-
-	useEffect(() => {
-		if (isSidebarOpen) {
-			document.addEventListener('click', handleClickOutside);
-		} else {
-			document.removeEventListener('click', handleClickOutside);
-		}
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-		};
-	}, [isSidebarOpen]);
-
-	return (
-		<div
-			className={clsx(styles.main)}
-			style={
-				{
-					'--font-family': defaultArticleState.fontFamilyOption.value,
-					'--font-size': defaultArticleState.fontSizeOption.value,
-					'--font-color': defaultArticleState.fontColor.value,
-					'--container-width': defaultArticleState.contentWidth.value,
-					'--bg-color': defaultArticleState.backgroundColor.value,
-				} as CSSProperties
-			}>
-			<div ref={sidebarRef}>
-				<ArrowButton onClick={handleToggleSidebar} isOpen={isSidebarOpen}/>
-				{isSidebarOpen && <ArticleParamsForm isSidebarOpen={isSidebarOpen} onApplyStyles={onApplyStyles}/>}
-			</div>
-			<Article appliedStyles={appliedStyles} />
-		</div>
-	);
+    return (
+        <div
+            className={clsx(styles.main)}
+            style={appliedStyles as CSSProperties}>
+            <ArrowButton onClick={handleToggleSidebar} isOpen={isSidebarOpen} />
+            <ArticleParamsForm
+                isSidebarOpen={isSidebarOpen}
+                onApplyStyles={onApplyStyles}
+                onClose={handleCloseSidebar}
+            />
+            <Article appliedStyles={appliedStyles} />
+        </div>
+    );
 };
 
 root.render(
-	<StrictMode>
-		<App />
-	</StrictMode>
+    <StrictMode>
+        <App />
+    </StrictMode>
 );
